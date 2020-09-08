@@ -3,5 +3,5 @@ jenkins:
 
 unclassified:
   colony:
-    address: "sdfsdf"
-    token: "sdf"
+    address: "%URL%"
+    token: "%TOKEN%"

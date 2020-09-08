@@ -1,0 +1,95 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.37">
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.80">
+    <script>def spaceName = &quot;%SPACE%&quot;
+pipeline {
+   agent any
+
+   stages {
+        stage(&apos;Build&apos;) {
+            steps {
+                echo &apos;Building ....&apos;
+                echo &apos;Build done&apos;
+                echo &apos;Uploading artifact&apos;
+            }
+        }
+        stage(&apos;Integration Tests&apos;) {
+            steps {                
+                script {
+
+                    def newSandboxData = null
+
+                    try {
+                        //Start Sandbox
+                        //TODO replace latest with current artifact from Build stage 
+                        newSandboxData = colony.blueprint(
+                            spaceName,                           // space name
+                            &apos;1 Development Environment&apos;,               // blueprint name
+                            &apos;demo-sandobx-&apos; + env.BUILD_NUMBER,  // sandbox name
+                            &apos;PT2H&apos;, [:], [&apos;DB_USER&apos;: &apos;demo&apos;, &apos;DB_PASS&apos;:&apos;demo&apos;, &apos;DB_NAME&apos;:&apos;demo_db&apos;], 30                                 // sandbox duration according to ISO 8601 duration
+                            )                                                                                                         // timeout
+                            .startSandbox()
+
+                        def endpoint = getEndpoint(newSandboxData)
+
+                        echo &apos;Running integration tests against endpoint: &apos; + endpoint
+
+                        // TBD - run tests
+                    }
+                    catch(Exception e) {
+                         if (newSandboxData != null) {
+                            colony.endSandbox(spaceName, newSandboxData.id)
+                        }
+                        print e.getClass().getName()
+                        print e.message
+                        throw e
+                    }
+                    finally {
+                        if (newSandboxData != null) {
+                            colony.endSandbox(spaceName, newSandboxData.id)
+                        }
+                    }
+                }                
+            }
+        }
+        stage(&apos;UI Tests&apos;) {
+            steps {                
+                echo &apos;Running UI tests....&apos;
+
+                echo &apos;Done&apos;
+            }
+        }
+        stage(&apos;Load Tests&apos;) {
+            steps {
+                echo &apos;Running load tests....&apos;
+
+                echo &apos;Done&apos;
+            }
+        }
+        stage(&apos;Security Tests&apos;) {
+            steps {
+                echo &apos;Running security tests....&apos;
+
+                echo &apos;Done&apos;
+            }
+        }
+        stage(&apos;Backwards Compatibility Tests&apos;) {
+            steps {
+                echo &apos;Running tests....&apos;
+
+                echo &apos;Done&apos;
+            }
+        }
+   }
+}
+</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

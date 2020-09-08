@@ -1,0 +1,7 @@
+jenkins:
+  systemMessage: "Jenkins Test Colony Installation"
+
+unclassified:
+  colony:
+    address: "sdfsdf"
+    token: "sdf"

@@ -8,10 +8,5 @@ services:
     ports:
       - 8080:8080 #web port
       - 50000:50000 #agent port
-    # volumes:
-    #   - jenkins_conf:/var/jenkins_conf
     environment:
       - CASC_JENKINS_CONFIG=/var/jenkins_home/jenkins.yaml
-      # - CASC_JENKINS_CONFIG=/var/jenkins_conf/jenkins.yaml
-# volumes:
-#   jenkins_conf:

@@ -1,11 +1,12 @@
 <?xml version='1.1' encoding='UTF-8'?>
-<flow-definition plugin="workflow-job@2.37">
+<flow-definition plugin="workflow-job@2.40">
+  <actions/>
   <description></description>
   <keepDependencies>false</keepDependencies>
   <properties>
-    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.13"/>
+    <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.1.1"/>
   </properties>
-  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.80">
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.83">
     <script>def spaceName = &quot;%SPACE%&quot;
 pipeline {
    agent any
@@ -29,9 +30,9 @@ pipeline {
                         //TODO replace latest with current artifact from Build stage 
                         newSandboxData = colony.blueprint(
                             spaceName,                           // space name
-                            &apos;1 Development Environment&apos;,               // blueprint name
+                            &apos;[Sample]WordPress Basic Stack (AWS)&apos;,               // blueprint name
                             &apos;demo-sandobx-&apos; + env.BUILD_NUMBER,  // sandbox name
-                            &apos;PT2H&apos;, [:], [&apos;DB_USER&apos;: &apos;demo&apos;, &apos;DB_PASS&apos;:&apos;demo&apos;, &apos;DB_NAME&apos;:&apos;demo_db&apos;], 30                                 // sandbox duration according to ISO 8601 duration
+                            &apos;PT2H&apos;, [:], [&apos;DB_USER&apos;: &apos;root&apos;, &apos;DB_PASS&apos;:&apos;12345&apos;, &apos;DB_NAME&apos;:&apos;wp_demo&apos;], 30                                 // sandbox duration according to ISO 8601 duration
                             )                                                                                                         // timeout
                             .startSandbox()
 
@@ -87,7 +88,24 @@ pipeline {
         }
    }
 }
-</script>
+// get the first application shortcut for the UI app
+def getEndpoint(def newSandboxData) {
+    
+    def endpoint = &apos;&apos;
+
+    for (app in newSandboxData.applications) {
+        if (app.name == &apos;wordpress&apos;) {
+            endpoint = app.shortcuts[0]
+            break
+        }
+    }
+
+    if (endpoint == &apos;&apos;) {
+        throw new Exception(&apos;couldnt get application endpoint from sandbox details&apos;)
+    }
+
+    return endpoint
+}</script>
     <sandbox>true</sandbox>
   </definition>
   <triggers/>

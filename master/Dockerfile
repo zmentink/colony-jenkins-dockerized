@@ -1,4 +1,4 @@
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:2.235.5-lts
 
 ENV JENKINS_USER admin
 ENV JENKINS_PASS admin
@@ -18,5 +18,4 @@ RUN mkdir -p /usr/share/jenkins/ref/jobs/demo/
 COPY config.xml /usr/share/jenkins/ref/jobs/demo/config.xml
 
 # Copy jenkins.yaml
-#COPY jenkins.yaml /var/jenkins_conf/jenkins.yaml
 COPY jenkins.yaml /usr/share/jenkins/ref/jenkins.yaml

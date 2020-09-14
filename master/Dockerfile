@@ -1,10 +1,14 @@
 FROM jenkins/jenkins:2.235.5-lts
 
 ENV JENKINS_USER admin
-ENV JENKINS_PASS admin
+ENV JENKINS_PASS %PASSWORD%
 
 # Skip initial setup
 ENV JAVA_OPTS -Djenkins.install.runSetupWizard=false
+
+# Jenkins runs all grovy files from init.groovy.d dir
+# use this for creating default admin user
+COPY default-user.groovy /usr/share/jenkins/ref/init.groovy.d/
 
 # Pre-install plugins
 COPY plugins.txt /usr/share/jenkins/plugins.txt

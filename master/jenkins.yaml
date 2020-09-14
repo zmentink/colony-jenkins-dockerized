@@ -3,5 +3,5 @@ jenkins:
 
 unclassified:
   colony:
-    address: "%URL%"
+    address: "https://cloudshellcolony.com"
     token: "%TOKEN%"

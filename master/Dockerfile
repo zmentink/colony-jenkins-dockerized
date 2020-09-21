@@ -23,3 +23,8 @@ COPY config.xml /usr/share/jenkins/ref/jobs/demo/config.xml
 
 # Copy jenkins.yaml
 COPY jenkins.yaml /usr/share/jenkins/ref/jenkins.yaml
+
+# Install aws cli
+USER root
+RUN apt-get update && apt-get install -y awscli
+

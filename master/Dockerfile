@@ -21,10 +21,15 @@ COPY colony.hpi /usr/share/jenkins/ref/plugins/colony.hpi
 RUN mkdir -p /usr/share/jenkins/ref/jobs/demo/
 COPY config.xml /usr/share/jenkins/ref/jobs/demo/config.xml
 
+# Install aws cli and npm
+USER root 
+RUN apt-get update && apt-get install -y awscli
+RUN apt-get install -y curl \
+  && curl -sL https://deb.nodesource.com/setup_9.x | bash - \
+  && apt-get install -y nodejs \
+  && curl -L https://www.npmjs.com/install.sh | sh
+
+USER jenkins
+
 # Copy jenkins.yaml
 COPY jenkins.yaml /usr/share/jenkins/ref/jenkins.yaml
-
-# Install aws cli
-USER root
-RUN apt-get update && apt-get install -y awscli
-

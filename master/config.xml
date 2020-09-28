@@ -12,11 +12,48 @@ pipeline {
    agent any
 
    stages {
+        stage(&apos;Checkout&apos;) {
+            steps {
+                dir(&quot;UI&quot;) {
+                    git &apos;https://QualiLabs@dev.azure.com/QualiLabs/Promotions%20Manager/_git/promotions-manager-ui&apos;
+                }
+                dir(&quot;API&quot;) {
+                    git &apos;https://QualiLabs@dev.azure.com/QualiLabs/Promotions%20Manager/_git/promotions-manager-api&apos;
+                }
+            }
+        }
         stage(&apos;Build&apos;) {
             steps {
-                echo &apos;Building ....&apos;
-                echo &apos;Build done&apos;
-                echo &apos;Uploading artifact&apos;
+                dir(&quot;UI&quot;) {
+                    sh &quot;&quot;&quot;
+                    npm install
+                    npm install --only=dev redux-immutable-state-invariant enzyme@3.8.0 enzyme-adapter-react-16@1.7.1 chai expect jsdom mocha react-addons-test-utils sinon
+                    export REACT_APP_BUILD_NUMBER=$BUILD_NUMBER &amp;&amp; npm run build
+                    &quot;&quot;&quot;
+                }
+                dir(&quot;API&quot;) {
+                    sh &quot;&quot;&quot;
+                    npm install
+                    npm run test:ci
+                    &quot;&quot;&quot;
+                }
+            }
+        }
+        stage(&apos;Publish artifacts&apos;) {
+            steps {
+                dir(&quot;UI&quot;) {
+                    sh &quot;&quot;&quot;
+                    tar -czvf promotions-manager-ui.tar.gz ./build/
+                    aws s3 cp promotions-manager-ui.tar.gz s3://%BUCKET_NAME%/productions-manager/latest/
+                    &quot;&quot;&quot;
+                }
+                dir(&quot;API&quot;) {
+                    sh &quot;&quot;&quot;
+                    rm -r .git &amp; rm .gitignore &amp; rm azure-pipelines.yml &amp; rm -r test-output &amp; rm -r test
+                    tar -czvf promotions-manager-api.tar.gz .
+                    aws s3 cp promotions-manager-api.tar.gz s3://%BUCKET_NAME%/productions-manager/latest/
+                    &quot;&quot;&quot;
+                }
             }
         }
         stage(&apos;Integration Tests&apos;) {
@@ -30,10 +67,14 @@ pipeline {
                         //TODO replace latest with current artifact from Build stage 
                         newSandboxData = colony.blueprint(
                             spaceName,                           // space name
-                            &apos;[Sample]WordPress Basic Stack (AWS)&apos;,               // blueprint name
-                            &apos;demo-sandobx-&apos; + env.BUILD_NUMBER,  // sandbox name
-                            &apos;PT2H&apos;, [:], [&apos;DB_USER&apos;: &apos;root&apos;, &apos;DB_PASS&apos;:&apos;12345&apos;, &apos;DB_NAME&apos;:&apos;wp_demo&apos;], 30                                 // sandbox duration according to ISO 8601 duration
-                            )                                                                                                         // timeout
+                            &apos;Promotions Manager EKS&apos;,               // blueprint name
+                            &apos;pm-test-sandobx-&apos; + env.BUILD_NUMBER,  // sandbox name
+                            &apos;PT2H&apos;,                                 // sandbox duration according to ISO 8601 duration
+                            [&apos;promotions-manager-ui&apos;: &apos;productions-manager/latest/promotions-manager-ui.tar.gz&apos;,        // artifacts
+                               &apos;promotions-manager-api&apos;: &apos;productions-manager/latest/promotions-manager-api.tar.gz&apos;, 
+                               &apos;mongodb&apos;: &apos;artifacts/promotions-manager/test-data/test-data-db.tar&apos;],    
+                            [&apos;PORT&apos;: &apos;3000&apos;, &apos;API_PORT&apos;: &apos;3001&apos;, &apos;RELEASE_NUMBER&apos;: &apos;none&apos;, &apos;API_BUILD_NUMBER&apos;: env.BUILD_NUMBER],       // inputs
+                            30)                                                                                                         // timeout
                             .startSandbox()
 
                         def endpoint = getEndpoint(newSandboxData)
@@ -94,7 +135,7 @@ def getEndpoint(def newSandboxData) {
     def endpoint = &apos;&apos;
 
     for (app in newSandboxData.applications) {
-        if (app.name == &apos;wordpress&apos;) {
+        if (app.name == &apos;promotions-manager-ui&apos;) {
             endpoint = app.shortcuts[0]
             break
         }

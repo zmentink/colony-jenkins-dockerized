@@ -2,3 +2,4 @@ workflow-step-api:2.22
 workflow-cps:2.83
 configuration-as-code:1.43
 blueocean:1.23.2
+git

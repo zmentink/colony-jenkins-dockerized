@@ -76,7 +76,7 @@ pipeline {
                         //TODO replace latest with current artifact from Build stage 
                         newSandboxData = colony.blueprint(
                             spaceName,                           // space name
-                            &apos;Promotions Manager EKS&apos;,               // blueprint name
+                            &apos;Promotions Manager AWS&apos;,               // blueprint name
                             &apos;pm-test-sandobx-&apos; + env.BUILD_NUMBER,  // sandbox name
                             &apos;PT2H&apos;,                                 // sandbox duration according to ISO 8601 duration
                             [&apos;promotions-manager-ui&apos;: &apos;productions-manager/latest/promotions-manager-ui.tar.gz&apos;,        // artifacts

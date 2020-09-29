@@ -20,6 +20,9 @@ pipeline {
                 dir(&quot;API&quot;) {
                     git &apos;https://QualiLabs@dev.azure.com/QualiLabs/Promotions%20Manager/_git/promotions-manager-api&apos;
                 }
+                dir(&quot;Testing&quot;) {
+                    git &apos;https://QualiLabs@dev.azure.com/QualiLabs/Promotions%20Manager/_git/Testing&apos;
+                }
             }
         }
         stage(&apos;Build&apos;) {
@@ -54,6 +57,12 @@ pipeline {
                     aws s3 cp promotions-manager-api.tar.gz s3://%BUCKET_NAME%/productions-manager/latest/
                     &quot;&quot;&quot;
                 }
+                dir(&quot;Testing&quot;) {
+                    sh &quot;&quot;&quot;
+                    tar -czvf test-db.tar.gz ./data/test-db
+                    aws s3 cp test-db.tar.gz s3://%BUCKET_NAME%/productions-manager/latest/
+                    &quot;&quot;&quot;
+                }
             }
         }
         stage(&apos;Integration Tests&apos;) {
@@ -72,7 +81,7 @@ pipeline {
                             &apos;PT2H&apos;,                                 // sandbox duration according to ISO 8601 duration
                             [&apos;promotions-manager-ui&apos;: &apos;productions-manager/latest/promotions-manager-ui.tar.gz&apos;,        // artifacts
                                &apos;promotions-manager-api&apos;: &apos;productions-manager/latest/promotions-manager-api.tar.gz&apos;, 
-                               &apos;mongodb&apos;: &apos;artifacts/promotions-manager/test-data/test-data-db.tar&apos;],    
+                               &apos;mongodb&apos;: &apos;productions-manager/latest/test-db.tar.gz&apos;],    
                             [&apos;PORT&apos;: &apos;3000&apos;, &apos;API_PORT&apos;: &apos;3001&apos;, &apos;RELEASE_NUMBER&apos;: &apos;none&apos;, &apos;API_BUILD_NUMBER&apos;: env.BUILD_NUMBER],       // inputs
                             30)                                                                                                         // timeout
                             .startSandbox()

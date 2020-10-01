@@ -46,21 +46,29 @@ pipeline {
             steps {
                 dir(&quot;UI&quot;) {
                     sh &quot;&quot;&quot;
-                    tar -czvf promotions-manager-ui.tar.gz ./build/
-                    aws s3 cp promotions-manager-ui.tar.gz s3://%BUCKET_NAME%/productions-manager/latest/
+                    mkdir drop
+                    cd build
+                    tar -czvf ../drop/promotions-manager-ui.${BUILD_NUMBER}.tar.gz *
+                    cd ..
+                    tar -czvf promotions-manager-ui.master.tar.gz drop/promotions-manager-ui.${BUILD_NUMBER}.tar.gz
+                    aws s3 cp promotions-manager-ui.master.tar.gz s3://%BUCKET_NAME%/promotions-manager/latest/
                     &quot;&quot;&quot;
                 }
                 dir(&quot;API&quot;) {
                     sh &quot;&quot;&quot;
                     rm -r .git &amp; rm .gitignore &amp; rm azure-pipelines.yml &amp; rm -r test-output &amp; rm -r test
-                    tar -czvf promotions-manager-api.tar.gz .
-                    aws s3 cp promotions-manager-api.tar.gz s3://%BUCKET_NAME%/productions-manager/latest/
+                    mkdir drop
+                    tar -czvf drop/promotions-manager-api.${BUILD_NUMBER}.tar.gz --exclude=./drop .
+                    tar -czvf promotions-manager-api.master.tar.gz drop/promotions-manager-api.${BUILD_NUMBER}.tar.gz
+                    aws s3 cp promotions-manager-api.master.tar.gz s3://%BUCKET_NAME%/promotions-manager/latest/
                     &quot;&quot;&quot;
                 }
                 dir(&quot;Testing&quot;) {
                     sh &quot;&quot;&quot;
-                    tar -czvf test-db.tar.gz ./data/test-db
-                    aws s3 cp test-db.tar.gz s3://%BUCKET_NAME%/productions-manager/latest/
+                    cd data/test-db/
+                    mkdir archive
+                    tar -czvf archive/test-db.tar.gz --exclude=./archive .
+                    aws s3 cp archive/test-db.tar.gz s3://%BUCKET_NAME%/promotions-manager/latest/
                     &quot;&quot;&quot;
                 }
             }
@@ -79,10 +87,10 @@ pipeline {
                             &apos;Promotions Manager AWS&apos;,               // blueprint name
                             &apos;pm-test-sandobx-&apos; + env.BUILD_NUMBER,  // sandbox name
                             &apos;PT2H&apos;,                                 // sandbox duration according to ISO 8601 duration
-                            [&apos;promotions-manager-ui&apos;: &apos;productions-manager/latest/promotions-manager-ui.tar.gz&apos;,        // artifacts
-                               &apos;promotions-manager-api&apos;: &apos;productions-manager/latest/promotions-manager-api.tar.gz&apos;, 
-                               &apos;mongodb&apos;: &apos;productions-manager/latest/test-db.tar.gz&apos;],    
-                            [&apos;PORT&apos;: &apos;3000&apos;, &apos;API_PORT&apos;: &apos;3001&apos;, &apos;RELEASE_NUMBER&apos;: &apos;none&apos;, &apos;API_BUILD_NUMBER&apos;: env.BUILD_NUMBER],       // inputs
+                            [&apos;promotions-manager-ui&apos;: &apos;promotions-manager/latest/promotions-manager-ui.master.tar.gz&apos;,        // artifacts
+                               &apos;promotions-manager-api&apos;: &apos;promotions-manager/latest/promotions-manager-api.master.tar.gz&apos;, 
+                               &apos;mongodb&apos;: &apos;promotions-manager/latest/test-db.tar.gz&apos;],    
+                            [&apos;PORT&apos;: &apos;3000&apos;, &apos;API_PORT&apos;: &apos;3001&apos;, &apos;RELEASE_NUMBER&apos;: &apos;none&apos;, &apos;API_BUILD_NUMBER&apos;: env.BUILD_NUMBER, &apos;AWS_INSTANCE_TYPE&apos;: &apos;t3.large&apos;],       // inputs
                             30)                                                                                                         // timeout
                             .startSandbox()
 
@@ -93,7 +101,7 @@ pipeline {
                         // TBD - run tests
                     }
                     catch(Exception e) {
-                         if (newSandboxData != null) {
+                        if (newSandboxData != null) {
                             colony.endSandbox(spaceName, newSandboxData.id)
                         }
                         print e.getClass().getName()

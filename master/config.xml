@@ -100,7 +100,7 @@ pipeline {
                         newSandboxData = colony.blueprint(
                             spaceName,                           // space name
                             &apos;Promotions Manager AWS&apos;,               // blueprint name
-                            &apos;pm-test-sandobx-&apos; + env.BUILD_NUMBER,  // sandbox name
+                            &apos;pm-test-sandbox-&apos; + env.BUILD_NUMBER,  // sandbox name
                             &apos;PT2H&apos;,                                 // sandbox duration according to ISO 8601 duration
                             [&apos;promotions-manager-ui&apos;: &apos;promotions-manager/latest/promotions-manager-ui.master.tar.gz&apos;,        // artifacts
                                &apos;promotions-manager-api&apos;: &apos;promotions-manager/latest/promotions-manager-api.master.tar.gz&apos;, 

@@ -1,5 +1,5 @@
-workflow-step-api
-workflow-cps
-configuration-as-code
-blueocean
-git
+workflow-step-api:2.23
+workflow-cps:2.83
+configuration-as-code:1.44
+blueocean:1.24.1
+git:4.4.4

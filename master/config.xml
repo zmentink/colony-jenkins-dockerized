@@ -125,7 +125,9 @@ pipeline {
                     }
                     finally {
                         if (newSandboxData != null) {
-                            colony.endSandbox(spaceName, newSandboxData.id)
+                        import time
+                                time.sleep(120) # Sleep for 120 seconds    
+                        colony.endSandbox(spaceName, newSandboxData.id)
                         }
                     }
                 }                

@@ -125,7 +125,7 @@ pipeline {
                     }
                     finally {
                         if (newSandboxData != null) {
-                          sleep(120000)
+                          sleep(3000)
                         colony.endSandbox(spaceName, newSandboxData.id)
                         }
                     }
